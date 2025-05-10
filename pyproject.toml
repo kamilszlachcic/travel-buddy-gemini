@@ -1,0 +1,27 @@
+[project]
+name = "travel-buddy-gemini"
+version = "0.1.0"
+description = "AI travel planner using Gemini"
+authors = [
+    {name = "Kamil Szlachcic",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "vertexai (>=1.71.1,<2.0.0)",
+    "streamlit (>=1.45.0,<2.0.0)",
+    "folium (>=0.19.5,<0.20.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "markdown (>=3.8,<4.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+pytest = "^8.3.5"
+

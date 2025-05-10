@@ -1,17 +1,39 @@
-def build_prompt(city, days, traveler_type):
+def build_prompt(city: str, days: int, traveler_type: str, places: list[dict], hotel: dict, restaurants: list[dict]) -> str:
+    places_text = "\n".join(
+        f"- **{p['name']}** — {p['description'] or 'No description'}"
+        for p in places
+    )
+
+    restaurant_text = "\n".join(
+        f"- **{r['name']}** — {r['description'] or 'No description'}"
+        for r in restaurants
+    )
+
     return f"""
-You are a travel planner.
+You are a professional AI travel planner.
 
-Create a detailed {days}-day travel itinerary to {city} for a traveler who is a {traveler_type}.
+Create a personalized {days}-day itinerary for a trip to **{city}** tailored to a **{traveler_type}**.
 
-Include the following:
-1. General plan per day with recommended activities and timing.
-2. At the beginning, suggest **one** hotel (3★ or higher if applicable), including name and short description.
-3. For **each day**, include:
-   - One lunch recommendation (local, casual or authentic)
-   - One dinner recommendation (more special or atmospheric)
+🏨 **Hotel Recommendation**:
+- **{hotel['name']}** – {hotel['description'] or 'No description'}
 
-Do not include breakfast unless specifically requested.
+🧭 **Top Local Recommendations**:
+These places are highly rated and relevant for this traveler. Integrate them naturally into the daily itinerary:
 
-Keep the tone friendly but professional. Return the response in **markdown** format.
+{places_text}
+
+🍽️ **Recommended Restaurants**:
+Use these real local restaurants in your daily lunch or dinner recommendations:
+
+{restaurant_text}
+
+📅 **Daily Plan**:
+For each day:
+- Morning and afternoon activities (include approximate time)
+- Options for both good and bad weather
+- One lunch and one dinner recommendation (use restaurants above when possible)
+
+💡 Format the entire response using **markdown** with headers and bullet points.
+🎯 Keep tone friendly, precise, and helpful.
+🚫 Do not include breakfast unless explicitly requested.
 """

@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyCharm
+.idea/
+*.iml
+
+# Poetry
+poetry.lock
+*.venv/
+.venv/
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# Mac / Linux / Windows system files
+.DS_Store
+Thumbs.db
+
+# Caches
+.cache/
+.mypy_cache/
+.pytest_cache/
+__pypackages__/
+
+# Data files
+*.sqlite
+*.db
+*.csv
+*.json
+*.zip

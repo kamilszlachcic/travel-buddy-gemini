@@ -4,7 +4,7 @@ from typing import List
 
 from app.models.traveler_types import TravelerType
 from app.services.gemini_service import generate_itinerary
-from app.services.geoapify_service import get_coordinates, get_places
+from app.services.geoapify_service import get_coordinates, get_places, get_hotels, get_restaurants
 from app.services.scoring import score_place
 from vertexai.preview.generative_models import GenerativeModel
 
@@ -67,8 +67,6 @@ async def hotels(city: str = "Lisbon"):
     lat, lon = await get_coordinates(city)
     hotels = await get_hotels(lat, lon)
     return hotels
-
-
 
 
 # ---------- Conversational Mode ----------

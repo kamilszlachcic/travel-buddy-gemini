@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.services.map_services import fetch_and_format_poi, to_geojson
+from app.services.external.map_services import fetch_and_format_poi, to_geojson
 
 router = APIRouter(prefix="/chat", tags=["Map & Location"])
 

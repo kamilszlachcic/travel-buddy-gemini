@@ -38,3 +38,5 @@ __pypackages__/
 *.csv
 *.json
 *.zip
+/data/yelp/yelp_data/
+/data/yelp/filtered_yelp_reviews.parquet/

@@ -1,4 +1,4 @@
-from app.services.geoapify_service import get_coordinates, get_places
+from app.services.external.geoapify_service import get_coordinates, get_places
 from app.services.scoring import score_place, score_hotel, score_restaurant
 
 async def fetch_and_format_poi(destination: str, traveler_type: str = "default"):

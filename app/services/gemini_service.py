@@ -1,22 +1,38 @@
 import vertexai
 from vertexai.preview.generative_models import GenerativeModel
-from app.prompt_templates import build_prompt
 import markdown
 vertexai.init(project="gold-summer-459311-q9", location="europe-west1")
 model = GenerativeModel("gemini-2.0-flash-001")
 
-from app.prompt_templates import build_prompt
-from app.services.geoapify_service import get_coordinates, get_places
+from app.services.external.geoapify_service import get_coordinates, get_places
 from app.services.scoring import score_place
-from app.services.geoapify_service import get_hotels
-from app.services.scoring import score_hotel
-from app.services.geoapify_service import get_restaurants
-from app.services.scoring import score_restaurant
 
+from vertexai.language_models import GenerativeModel
+from app.services.context_extraction import TripContext
+from typing import List
+
+
+
+def call_gemini_json(prompt: str) -> dict:
+    """
+    Calls Gemini model and parses the output as JSON.
+    """
+    model = GenerativeModel("gemini-2.0-flash-001")
+    chat = model.start_chat()
+
+    response = chat.send_message(prompt)
+
+    try:
+        import json
+        return json.loads(response.text)
+    except Exception as e:
+        print("❌ Failed to parse Gemini response as JSON.")
+        print(f"Response: {response.text}")
+        raise e
 
 
 async def generate_itinerary(city: str, days: int, traveler_type: str):
-    from app.services.geoapify_service import get_hotels, get_restaurants
+    from app.services.external.geoapify_service import get_hotels, get_restaurants
     from app.services.scoring import score_hotel, score_restaurant
     from app.prompt_templates import build_prompt
 
@@ -70,3 +86,40 @@ async def generate_itinerary(city: str, days: int, traveler_type: str):
         "restaurants": top_restaurants
     }
 
+
+
+def call_gemini_plan_generation(trip_context: TripContext, pois: List[dict]) -> str:
+    """
+    Builds a prompt using trip context and POIs, then asks Gemini to generate a trip plan.
+    """
+    poi_snippets = []
+    for poi in pois:
+        name = poi.get("name", "Unnamed")
+        category = poi.get("category", "Unknown")
+        rating = poi.get("rating", "N/A")
+        description = poi.get("description", "")
+        tags = ", ".join(poi.get("tags", []))
+
+        snippet = f"- {name} ({category}, {rating}★): {description} [{tags}]"
+        poi_snippets.append(snippet)
+
+    poi_block = "\n".join(poi_snippets)
+
+    prompt = f"""
+    The user is planning a {trip_context.days}-day trip to {trip_context.city}.
+    Traveler type: {trip_context.persona or "General"}
+    Traveling with: {", ".join(trip_context.group_type) or "Solo"}
+    Preferred categories: {", ".join(trip_context.preferred_categories)}
+    Budget: {trip_context.budget_level or "Not specified"}, Mobility: {trip_context.mobility or "Not specified"}
+
+    Based on the following recommended places:
+    {poi_block}
+
+    Please generate a daily travel itinerary with morning, afternoon, lunch, dinner, and evening suggestions.
+    Format the output in markdown with clear day splits.
+    """
+
+    model = GenerativeModel("gemini-2.0-flash-001")
+    chat = model.start_chat()
+    response = chat.send_message(prompt)
+    return response.text

@@ -1,166 +1,150 @@
-# 🧭 Travel Buddy – AI-Powered Personalized Trip Planner
+# 🧭 Travel Buddy – AI-Powered Personalized Trip Companion
 
-**Travel Buddy** is an intelligent travel assistant powered by Large Language Models (LLMs), designed to generate **personalized travel itineraries** based on user preferences, context, and local data. The project focuses on modularity, open-source integration, and a modern NLP/GenAI backend.
+**Travel Buddy** is an intelligent assistant that generates **personalized travel itineraries** by combining LLM-driven conversational input with real-world data from multiple sources. The system integrates user profiles, contextual metadata, and POI scoring for high-quality, adaptable travel planning.
 
 ---
 
 ## 🚀 Project Goals
 
-- Deliver customized travel plans for different traveler types and occasions.
-- Recommend attractions, hotels, restaurants, and nightlife options.
-- Provide interactive maps and routing with POI (Point of Interest) coordinates.
-- Leverage open data sources and generative models to enhance UX.
-- Offer an adaptable architecture that supports different models and frontends.
+- Deliver tailored trip plans based on traveler type, preferences, group size, and context.
+- Recommend points of interest (POIs) such as attractions, restaurants, and hotels using multi-source data.
+- Visualize trip routes on interactive maps.
+- Support multi-model LLM integration (Gemini, Claude, Mistral, etc.).
+- Enable trip persistence, editing, and real-time refinement during the trip via chat interface.
 
 ---
 
-## ✅ Current Progress
+## ✅ Key Features
 
-### 🧠 Backend
-- Fully functional **FastAPI** server with modular endpoints for itinerary generation, POI enrichment, and user queries.
-- Integrated with **Google Vertex AI** using `gemini-2.0-flash-001`.
-- Implemented prompt-engineering logic for itinerary generation using user-defined templates.
-- Defined user personas via `traveler_types.py` for contextual itinerary suggestions.
-- Created modular structure for:
-  - Generating itineraries based on location, number of days, and occasion.
-  - Generating coordinates for POIs (Geoapify / Gemini fallback).
-- Added support for restaurant and hotel recommendations with multiple entries per day.
-- Established flexible design for activity slotting (morning, afternoon, evening).
-- Implemented markdown formatting to support consistent frontend rendering.
+### 🧠 Context-Aware Itinerary Generation
+- Extracts structured `TripContext` from user input (city, days, persona, dietary needs, occasion, etc.).
+- Uses this context to dynamically tailor each trip plan.
 
-### 🌐 Frontend
-- Functional **Streamlit** prototype for displaying itineraries and interacting with the backend.
-- Designed interactive map component (WIP).
-- Structured visual itinerary display per day.
-- Supports future click-to-expand POI details (e.g., external links, tags).
+### 📍 POI Aggregation & Scoring
+- **Yelp Dataset**:
+  - Preprocessed locally (ETL via PySpark) including:
+    - Review filtering and sentiment analysis
+    - Feature extraction (tags, categories, ratings, etc.)
+    - Deduplication and vectorization (FAISS indexing)
+  - Used primarily for hotels and restaurants
+- **Google Places API**:
+  - Source for real-time attractions, backup hotel/restaurant data, coordinates
+- **Tripadvisor API**:
+  - Used to enrich POIs with semantic tags (`romantic`, `must-see`, etc.) and descriptions
+- **Geoapify API**:
+  - Coordinate enrichment and fallback POIs (e.g., niche regions)
 
----
+### 🧠 LLM-Driven Plan Creation
+- Uses Gemini via Vertex AI for generating detailed markdown itineraries.
+- Supports dual-mode planning (e.g., good-weather vs bad-weather variants).
 
-## 📍 Features (Planned & In Progress)
+### 🗺️ Interactive Frontend
+- **Streamlit** prototype:
+  - Visual daily itineraries with POIs
+  - Interactive map with coordinate pins
+- **React** frontend (in progress):
+  - Editable trips
+  - Memory-enabled chatbot refinement
 
-| Feature | Description | Status |
-|--------|-------------|--------|
-| **Dynamic Recommendation Engine** | Score attractions/restaurants based on distance, popularity, activity type, weather (fallback logic), etc. | ⏳ In planning |
-| **Dual-mode activity planning** | If weather is relevant (e.g., hiking, beach), offer both sunny and rainy-day variants | ✅ Ready |
-| **Map route visualization** | Plot full trip path across POIs and allow filtering | ⏳ In design |
-| **Geoapify / OpenTripMap Integration** | For obtaining coordinates, metadata, and type-based filtering | ⏳ Prototype |
-| **RAG architecture (LLM + local context)** | Integrate semantic search (e.g., FAISS + LangChain) for personalized local knowledge recommendations | ⏳ Research |
-| **Traveler memory** | Retain short-term context during multi-turn interactions | ✅ LLM memory integration |
-| **Model fallback / switching** | Abstract model interface to toggle between Gemini, Claude, Mistral, etc. | ⏳ Planning |
+### 🔁 Persistent Planning
+- Users can:
+  - Save their trips
+  - Reopen and edit past plans
+  - Interact with the chatbot to improve their itinerary during the actual trip
 
 ---
 
 ## 🧩 Tech Stack
 
-- **Backend**: FastAPI, Python, Vertex AI SDK, Geoapify API
-- **Frontend**: Streamlit (prototype), React (Tailwind, WIP), shadcn/ui
-- **LLM Integration**: Google Gemini 2.0 Flash
-- **Mapping & Coordinates**: Geoapify (fallback to Gemini)
-- **Prompt Templates**: Custom YAML-style prompt abstraction
-- **Deployment**: Docker-ready, GCP-compatible
+| Layer            | Technologies                                                                 |
+|------------------|------------------------------------------------------------------------------|
+| **Backend**      | Python, FastAPI, Vertex AI SDK, Geoapify, Google Places, Tripadvisor         |
+| **Frontend**     | Streamlit (prototype), React (Tailwind, shadcn/ui)                           |
+| **LLM Models**   | Gemini 2.0 Flash (via Vertex AI), with abstraction layer for Claude, Mistral |
+| **Recommendation** | Custom scoring, PySpark, FAISS, POIBERT/BTRec (planned)                    |
+| **Mapping**      | Geoapify (map + coordinates), Google Maps                                    |
+| **Deployment**   | Docker-ready, GCP-compatible architecture                                    |
 
 ---
 
-## 🗂️ Repository Structure
+## 📂 Repository Structure
 
 ```
 travel-buddy-gemini/
-│
 ├── app/
-│   ├── models/
-│   │   └── traveler_types.py           # User profiles/personas
-│   │
-│   ├── routers/
-│   │   ├── map_router.py               # Routing endpoints
-│   │   └── trip.py                     # Trip planning endpoint
-│   │
-│   ├── services/
-│   │   ├── gemini_service.py           # LLM integration (Vertex AI)
-│   │   ├── geoapify_service.py         # POI coordinate enrichment
-│   │   ├── map_services.py             # Geo/map logic
-│   │   └── scoring.py                  # Scoring engine for recommendations
-│   │
-│   ├── utils/
-│   │   ├── main.py                     # FastAPI app definition
-│   │   └── prompt_templates.py         # Prompt logic and templating
-│
-├── examples/
-│   └── sample_output.md                # Markdown-based itinerary sample
-│
-├── streamlit_app.py                    # Streamlit UI prototype
-├── .env                                # Environment variables
-├── .gitignore
-├── poetry.lock
-├── pyproject.toml
+│   ├── models/                    # Trip context and POI schemas
+│   ├── routers/                   # FastAPI endpoints
+│   ├── services/                 
+│   │   ├── poi_engine.py         # Aggregation and scoring logic
+│   │   ├── gemini_service.py     # LLM integration
+│   │   └── external/             # API integrations (Yelp, Google, Geoapify)
+│   ├── utils/                     # Prompt templates and helpers
+├── data/                          # Preprocessed Yelp dataset
+├── frontend/                      # Streamlit + React UI
+├── examples/                      # Markdown sample trips
+├── pyproject.toml, Dockerfile, .env, etc.
 └── README.md
-│
-├── app/
-│   ├── main.py                  # FastAPI backend entry point
-│   ├── prompt_templates.py      # Prompt logic and templating
-│   ├── traveler_types.py        # User profiles/personas
-│   ├── geoapify_service.py      # Location data integration
-│   └── itinerary_generator.py   # Core trip logic
-│
-├── frontend/
-│   └── streamlit_app.py         # Streamlit UI prototype
-│
-├── tests/                       # Unit and integration tests (TBD)
-│
-└── README.md                    # You're here
 ```
 
 ---
 
-## 🛣 Roadmap
+## 📊 Recommendation Engine (ML Plan)
 
-1. **LLM Tuning & Evaluation**
-   - Add scoring logic (popularity, proximity, etc.)
-   - Use structured output schema for map parsing
+### Hybrid POI Recommendation Approaches
+- BERT-based sequence models for POI personalization (e.g. POIBERT, BTRec)
+- Collaborative + content-based hybrid models to handle cold start
+- Sentiment-aware ranking using NLP over reviews (spaCy, Hugging Face)
 
-2. **Frontend Completion**
-   - Interactive, mobile-first view with filters
-   - Dynamic rendering of daily schedules and links
-
-3. **Data Enhancements**
-   - Expand POI metadata with crowd-sourced or open government APIs
-   - Introduce event-based filtering (e.g., festivals, seasonal attractions)
-
-4. **AI Reasoning Layer**
-   - Contextual filtering (e.g., museums in bad weather, trails in good)
-   - Fallback logic for ambiguous queries (ask clarifying questions)
+### FAISS Integration
+- Vectorized POIs allow for fast similarity search and persona matching
+- Personalized re-ranking using distance to traveler vector
 
 ---
 
-## 🤖 Example Output
+## 📈 Future Roadmap
 
-A 3-day trip to Barcelona for a food lover might return:
+### Phase 1 (Completed)
+- ✅ Gemini integration and prompt design
+- ✅ Context extraction and trip logic
+- ✅ Yelp dataset ETL, tagging, scoring, FAISS vector search
+
+### Phase 2 (WIP)
+- ⏳ POI fusion from Google, Tripadvisor, Yelp
+- ⏳ React frontend with editable UI
+- ⏳ A/B testing and feedback loop for plan quality
+
+### Phase 3 (Planned)
+- 🔄 Real-time trip editing via chatbot
+- 📅 Event-based recommendations (festivals, seasonal offers)
+- 🧠 Dynamic model retraining (Airflow, MLflow)
+- 📊 Real-time analytics (Prometheus, Grafana)
+
+---
+
+## 🤖 Example Output (Markdown)
 
 ```markdown
-### Day 1 – Exploring Gothic Quarter
+### Day 1 – Food Lover's Tour of Barcelona
 
-**Morning**: Walk through Barri Gòtic, visit Barcelona Cathedral  
-**Lunch**: Local tapas at El Xampanyet  
+**Morning**: Gothic Quarter walk + local pastry  
+**Lunch**: Tapas at El Xampanyet  
 **Afternoon**: Picasso Museum + Chocolate tasting  
-**Dinner**: Bodega Biarritz 1881  
-**Nightlife**: Jazz club near Plaça Reial  
+**Dinner**: Seafood paella at Bodega Biarritz  
+**Evening**: Jazz bar in El Raval  
 
-[Map with pins and routes to be displayed here]
+[Interactive map here]
 ```
 
 ---
 
-## 📌 License
+## 🙋 Author
+
+- **Kamil Szlachcic**  
+  GitHub: [@kamilszlachcic](https://github.com/kamilszlachcic)  
+  LinkedIn: [Kamil Szlachcic](https://www.linkedin.com/in/kamilszlachcic)
+
+---
+
+## 📃 License
 
 MIT License – see `LICENSE` for details.
-
----
-
-## 🙋‍♂️ Authors
-
-- **Kamil Szlachcic** – [GitHub](https://github.com/kamilszlachcic) | [LinkedIn](https://www.linkedin.com/in/kamilszlachcic)
-
----
-
-## 🌟 Contribute
-
-We’re open to ideas, contributions, and feedback on how to make Travel Buddy even smarter and more useful. PRs and discussions welcome.

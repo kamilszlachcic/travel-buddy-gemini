@@ -4,11 +4,12 @@ from typing import List
 
 from app.models.traveler_types import TravelerType
 from app.services.gemini_service import generate_itinerary
-from app.services.geoapify_service import get_coordinates, get_places, get_hotels, get_restaurants
+from app.services.external.geoapify_service import get_coordinates, get_places, get_hotels
 from app.services.scoring import score_place
 from vertexai.preview.generative_models import GenerativeModel
 
 router = APIRouter(prefix="/chat", tags=["Trip Planner"])
+
 
 def map_traveler_type(model_type: str) -> str:
     mapping = {
@@ -120,3 +121,22 @@ Respond in valid JSON format.
 
     except Exception as e:
         return {"error": str(e), "raw": response.text}
+
+    from app.services.context_extraction import extract_trip_context_from_prompt
+    from app.services.poi_engine import generate_poi_recommendations
+    from app.services.gemini_service import call_gemini_plan_generation
+
+    @router.post("/generate-trip")
+    async def generate_trip(req: ConversationRequest):
+        user_message = req.message
+
+        # 1. Wyciągnij kontekst podróży z wiadomości
+        trip_context = extract_trip_context_from_prompt(user_message)
+
+        # 2. Wygeneruj POI z wielu źródeł (Yelp + Google + OTM)
+        pois = generate_poi_recommendations(trip_context)
+
+        # 3. Zbuduj prompt i wygeneruj plan podróży
+        plan = call_gemini_plan_generation(trip_context, pois)
+
+        return {"trip_context": trip_context.dict(), "plan": plan}
